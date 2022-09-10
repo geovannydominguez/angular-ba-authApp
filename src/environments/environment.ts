@@ -4,7 +4,11 @@
 
 export const environment = {
   production: false,
-  baseUrl: 'http://localhost:4000/api'
+  baseUrl: 'http://localhost:4000/api',
+  cognito: {
+    userPoolId: 'us-east-1_BViNLPAZW',
+    userPoolWebClientId: '7l58broj906ds4bmep13hf1iev',
+  }
 };
 
 /*

@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+
 import Swal from 'sweetalert2'
 
+import { User } from '../../interfaces/interfaces';
 import { AuthService } from '../../services/auth.service';
+import { Auth } from 'aws-amplify';
 
 @Component({
   selector: 'app-login',
@@ -11,35 +14,40 @@ import { AuthService } from '../../services/auth.service';
   styles: [
   ]
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
+
+  loading: boolean;
+  user: User;
 
   miFormulario: FormGroup = this.fb.group({
-    email: ['tes1@gmail.com', [Validators.required, Validators.email]],
-    password: ['123456', [Validators.required, Validators.minLength(6)]]
+    email: ['camilo@rokk3rlabs.com', [Validators.required, Validators.email]],
+    password: ['Trudat55!', [Validators.required, Validators.minLength(6)]]
   });
 
-  constructor(private fb: FormBuilder, 
-              private router: Router, 
-              private authService: AuthService) { }
-
-  ngOnInit(): void {
+  constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) {
+    this.loading = false;
+    this.user = {} as User;
   }
 
-  login() {
-    console.log(this.miFormulario.value);
-    console.log(this.miFormulario.valid);
+  /**
+   * Call service for login
+   */
+  public signIn(): void {
+    this.user = <User>this.miFormulario.value;
 
-    const {email, password} = this.miFormulario.value;
-
-    this.authService.login(email, password)
-      .subscribe( resp => {
-        
-        if (resp === true) {
-          this.router.navigateByUrl('/dashboard');
-        } else {
-          Swal.fire('Error', resp, 'error');
-        }
+    this.loading = true;
+    console.log(this.user);
+    this.authService.signIn(this.user)
+      .then(() => {
+        this.router.navigateByUrl('/dashboard');
+      }).catch((err) => {
+        this.loading = false;
+        console.log(err);
+        Swal.fire('Error', err.name, 'error');
       });
-    //this.router.navigateByUrl('/dashboard');
+
+    //this.authService.federatedSignIn();
+    
   }
+
 }

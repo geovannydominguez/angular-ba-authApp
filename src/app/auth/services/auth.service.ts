@@ -1,126 +1,102 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, tap } from 'rxjs/operators';
-import { of, Observable } from 'rxjs';
+import { of, Observable, BehaviorSubject } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { AuthResponse, Usuario } from '../interfaces/interfaces';
+import { AuthResponse, User, Usuario } from '../interfaces/interfaces';
+import Amplify, { Auth } from 'aws-amplify';
+import awsmobile from '../../../../src/aws-exports';
 
 
 @Injectable({
-  providedIn: 'root' // Gracias a esto, no hay que proveer el servicio en ningún módulo
+  providedIn: 'root' // To provide the service
 })
 export class AuthService {
 
-  private baseUrl: string = environment.baseUrl;
-  private _usuario!: Usuario;
+  private authenticationSubject: BehaviorSubject<any>;
 
-  get usuario() {
-    // retornar un nuevo objeto, es por seguridad para evitar modificar el objeto original.
-    return { ...this._usuario };
+  constructor() {
+    Amplify.configure(awsmobile);
+
+    this.authenticationSubject = new BehaviorSubject<boolean>(false);
   }
 
-  // Inyectar el servicio http
-  constructor(private http: HttpClient) { }
+  public federatedSignIn() {
+    return Auth.federatedSignIn();
+  }
 
-  registro(name: string, email: string, password: string) {
-    const url: string = `${this.baseUrl}/auth/new`;
+  public signUp(user: User): Promise<any> {
+    return Auth.signUp({
+      username: user.email,
+      password: user.password,
+    });
+  }
 
-    // el orden de las propiedades del objeto no importa
-    const body = { name, email, password };
+  public confirmSignUp(user: User): Promise<any> {
+    return Auth.confirmSignUp(user.email, user.code);
+  }
 
-    // primer argumento el url
-    // segundo argumento el body
-    // La respuesta puede ser exitosa o puede ser error.
-    return this.http.post<AuthResponse>(url, body)
-      .pipe(
-        // El orden de los operadores rxjs es importante. Se ejecutan en cascada.
+  public signIn(user: User): Promise<any> {
+    return Auth.signIn(user.email, user.password)
+      .then(() => {
+        this.authenticationSubject.next(true);
+      });
+  }
 
-        // Primero almacenar los datos del Usuario
-        // {ok, token} des-estructurar el objeto respuesta
-        tap(({ ok, token }) => {
-          if (ok) {
-            // Save myToken in LocalStorage
-            localStorage.setItem('myToken', token!);
+  public signOut(): Promise<any> {
+    return Auth.signOut()
+      .then(() => {
+        this.authenticationSubject.next(false);
+      });
+  }
+
+  public isAuthenticated(): Promise<boolean> {
+    if (this.authenticationSubject.value) {
+      return Promise.resolve(true);
+    } else {
+      return this.getUser()
+        .then((user: any) => {
+          if (user) {
+            return true;
+          } else {
+            return false;
           }
-        }),
-
-        // necesito hacer una mutación de los datos. Retornar solo lo necesario
-        map(resp => resp.ok),
-
-        //Atrapar el error
-        catchError(err => of(err.error.msg))
-      );
-  }
-
-  login(email: string, password: string) {
-
-    const url: string = `${this.baseUrl}/auth`;
-
-    const body = { email, password };
-
-    // primer argumento el url
-    // segundo argumento el body
-    // La respuesta puede ser exitosa o puede ser error.
-    return this.http.post<AuthResponse>(url, body)
-      .pipe(
-        // El orden de los operadores rxjs es importante. Se ejecutan en cascada.
-
-        // Primero almacenar los datos del Usuario
-        // Aquí también podemos des-estrucutar el objeto respuesta {ok, token}, pero lo dejo así:
-        tap(resp => {
-          if (resp.ok) {
-            // Save myToken in LocalStorage
-            localStorage.setItem('myToken', resp.token!);
-          }
-        }),
-
-        // necesito hacer una mutación de los datos. Retornar solo lo necesario
-        map(resp => resp.ok),
-
-        //Atrapar el error
-        catchError(err => of(err.error.msg))
-      );
-
-  }
-
-  validarToken(): Observable<boolean> {
-    const url: string = `${this.baseUrl}/auth/renew`;
-    const headers = new HttpHeaders()
-      .set('x-token', localStorage.getItem('myToken') || ''); // si localStorage.getItem('myToken') es null entonces envía string vacío ''.
-
-    // En el segundo argumento del get(), en las opciones, Cuando la propiedad y la variable se llaman igual, puedo omitir el nombre de la propiedad
-    // return this.http.get(url, {headers: headers});
-    return this.http.get<AuthResponse>(url, { headers })
-      .pipe(
-        map(resp => { // Segun nuestro backend, llega a este punto solo cuando la respuesta es true exitosa.
-          this.setLocalStorageAndUser(resp);
-          return resp.ok
-        }),
-        catchError(err => of(false))
-      );
-
-  }
-
-  logout() {
-
-    // Se puede eliminar solo myToken
-    //localStorage.removeItem('myToken');
-
-    // O podemos eliminar todas las variables del sitio web
-    // IMPORTANTE: Sólo elimina el localStorage del sitio web actual.
-    localStorage.clear();
-  }
-
-  // Función auxilitar para evitar repetir código
-  setLocalStorageAndUser(resp: AuthResponse) {
-    // Save myToken in LocalStorage
-    localStorage.setItem('myToken', resp.token!);
-    this._usuario = {
-      name: resp.name!,
-      uid: resp.uid!,
-      email: resp.email!
+        }).catch(() => {
+          return false;
+        });
     }
   }
+
+  public getUser(): Promise<any> {
+    return Auth.currentUserInfo();
+  }
+
+  public updateUser(user: User): Promise<any> {
+    return Auth.currentUserPoolUser()
+      .then((cognitoUser: any) => {
+        return Auth.updateUserAttributes(cognitoUser, user);
+      });
+  }
+
+
+  // validarToken(): Observable<boolean> {
+  //   const url: string = `${this.baseUrl}/auth/renew`;
+  //   const headers = new HttpHeaders()
+  //     .set('x-token', localStorage.getItem('myToken') || ''); // si localStorage.getItem('myToken') es null entonces envía string vacío ''.
+
+  //   // En el segundo argumento del get(), en las opciones, Cuando la propiedad y la variable se llaman igual, puedo omitir el nombre de la propiedad
+  //   // return this.http.get(url, {headers: headers});
+  //   return this.http.get<AuthResponse>(url, { headers })
+  //     .pipe(
+  //       map(resp => { // Segun nuestro backend, llega a este punto solo cuando la respuesta es true exitosa.
+  //         this.setLocalStorageAndUser(resp);
+  //         return resp.ok
+  //       }),
+  //       catchError(err => of(false))
+  //     );
+
+  // }
+
 
 }

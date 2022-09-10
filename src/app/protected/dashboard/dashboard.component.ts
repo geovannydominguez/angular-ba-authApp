@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { User } from 'src/app/auth/interfaces/interfaces';
 import { AuthService } from '../../auth/services/auth.service';
 
 @Component({
@@ -13,17 +14,24 @@ import { AuthService } from '../../auth/services/auth.service';
     `
   ]
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
 
-  get usuario() {
-    return this.authService.usuario;
+  user: User;
+
+  constructor(private router: Router, private authService: AuthService) {
+    this.user = {} as User;
   }
 
-  constructor(private router: Router, private authService: AuthService) { }
+  ngOnInit(): void {
+    this.authService.getUser().then((user: any) => {
+      this.user = user;
+    });
+  }
 
   logout() {
-    this.authService.logout();
-    this.router.navigateByUrl('/auth');
+    this.authService.signOut().then(() => {
+      this.router.navigateByUrl('/auth');
+    });
   }
 
 }

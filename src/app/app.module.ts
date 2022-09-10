@@ -4,6 +4,11 @@ import { HttpClientModule } from "@angular/common/http";
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { FormsModule } from '@angular/forms';
+
+// interceptors & auth-gaurd
+import { HttpInterceptorProviders } from './auth/interceptors/interceptor-provider';
+import { ValidarTokenGuard } from './guards/validar-token.guard';
 
 @NgModule({
   declarations: [
@@ -12,9 +17,13 @@ import { AppComponent } from './app.component';
   imports: [
     BrowserModule,
     HttpClientModule, // Para peticiones HTTP
-    AppRoutingModule
+    AppRoutingModule,
+    FormsModule
   ],
-  providers: [],
+  providers: [
+    ValidarTokenGuard,
+    HttpInterceptorProviders
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
