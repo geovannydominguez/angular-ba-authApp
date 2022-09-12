@@ -24,7 +24,12 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.authService.getUser().then((user: any) => {
+      console.log(user);
       this.user = user;
+    });
+
+    this.authService.currentUserCredentials().then((user: any) => {
+      console.log(user);
     });
   }
 

@@ -17,13 +17,21 @@ export class AuthService {
   private authenticationSubject: BehaviorSubject<any>;
 
   constructor() {
-    Amplify.configure(awsmobile);
+    console.log('constructor service');
+
+    //Amplify.configure(awsmobile);
+    Amplify.configure({
+      Auth: environment.cognito,
+    });
 
     this.authenticationSubject = new BehaviorSubject<boolean>(false);
   }
 
-  public federatedSignIn() {
-    return Auth.federatedSignIn();
+  public federatedSignIn(): Promise<any> {
+    return Auth.federatedSignIn()
+    .then(()=>{
+      this.authenticationSubject.next(true);
+    });
   }
 
   public signUp(user: User): Promise<any> {
@@ -77,6 +85,10 @@ export class AuthService {
       .then((cognitoUser: any) => {
         return Auth.updateUserAttributes(cognitoUser, user);
       });
+  }
+
+  public currentUserCredentials(): Promise<any> {
+    return Auth.currentSession();
   }
 
 

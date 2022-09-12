@@ -30,7 +30,7 @@ export class JwtInterceptor implements HttpInterceptor {
                     let jwt = auth.accessToken.jwtToken;
                     let with_auth_request = request.clone({
                         setHeaders: {
-                            Authorization: `Bearer ${jwt}`
+                            Authorization: `baustro ${jwt}`
                         }
                     });
 

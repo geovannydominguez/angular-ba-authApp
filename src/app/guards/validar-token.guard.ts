@@ -23,7 +23,8 @@ export class ValidarTokenGuard implements CanActivate, CanLoad {
   canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
     console.log('canActivate');
 
-    return Auth.currentAuthenticatedUser().then(() => {
+    return Auth.currentAuthenticatedUser().then((resp) => {
+      console.log(resp);
       return true;
     })
       .catch(() => {
@@ -32,18 +33,15 @@ export class ValidarTokenGuard implements CanActivate, CanLoad {
       });
   }
 
-  canLoad(): Observable<boolean> | boolean {
+  canLoad(): Promise<boolean> | boolean {
     console.log('canLoad');
 
-    // return this.authService.validarToken()
-    //   .pipe(
-    //     tap(resp => {
-    //       if (!resp) {
-    //         this.router.navigateByUrl('/auth');
-    //       }
-    //     })
-    //   );
-
-    return true;
+    return Auth.currentAuthenticatedUser().then(() => {
+      return true;
+    })
+      .catch(() => {
+        this.router.navigate(['/auth']);
+        return false;
+      });
   }
 }

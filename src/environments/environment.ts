@@ -5,10 +5,46 @@
 export const environment = {
   production: false,
   baseUrl: 'http://localhost:4000/api',
+  // cognito: {
+  //   userPoolId: 'us-east-1_BViNLPAZW',
+  //   userPoolWebClientId: '7l58broj906ds4bmep13hf1iev',
+  // },
+
+
+  // cognito: {
+  //   userPoolId: 'us-east-1_EsvrDQlkM',
+  //   userPoolWebClientId: '4gcb3jnanjj3gvbsdn1hcbpt3',
+  //   "oauth": {
+  //     "domain": "pool-application-test.auth.us-east-1.amazoncognito.com",
+  //     "redirectSignIn": "http://localhost:4200/login",
+  //     "redirectSignOut": "http://localhost:4200/login",
+  //     "responseType": "code"
+  // }
+  // },
+
   cognito: {
-    userPoolId: 'us-east-1_BViNLPAZW',
-    userPoolWebClientId: '7l58broj906ds4bmep13hf1iev',
-  }
+    identityPoolId: "",
+    region: "us-east-1",
+    userPoolId: "us-east-1_EsvrDQlkM",
+    userPoolWebClientId: "4gcb3jnanjj3gvbsdn1hcbpt3",
+    
+    mandatorySignIn: false,
+    
+    oauth: {
+      domain: "pool-application-test.auth.us-east-1.amazoncognito.com",
+      scope: ['phone', 'email', 'profile', 'openid'],
+      redirectSignIn: "http://localhost:4201/dashboard",
+      redirectSignOut: "http://localhost:4201/auth",
+      responseType: 'code',
+      options: {
+        AdvancedSecurityDataCollectionFlag: false
+      }
+    },
+    },
+    Storage: {
+    bucket: "",
+    region: "us-east-1"
+    }
 };
 
 /*

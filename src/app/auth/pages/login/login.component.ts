@@ -20,8 +20,8 @@ export class LoginComponent {
   user: User;
 
   miFormulario: FormGroup = this.fb.group({
-    email: ['camilo@rokk3rlabs.com', [Validators.required, Validators.email]],
-    password: ['Trudat55!', [Validators.required, Validators.minLength(6)]]
+    email: ['geovannyadq@gmail.com', [Validators.required, Validators.email]],
+    password: ['P@ssw0rd', [Validators.required, Validators.minLength(6)]]
   });
 
   constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) {
@@ -33,21 +33,26 @@ export class LoginComponent {
    * Call service for login
    */
   public signIn(): void {
-    this.user = <User>this.miFormulario.value;
+    // this.user = <User>this.miFormulario.value;
 
-    this.loading = true;
-    console.log(this.user);
-    this.authService.signIn(this.user)
-      .then(() => {
-        this.router.navigateByUrl('/dashboard');
-      }).catch((err) => {
-        this.loading = false;
+    // this.loading = true;
+    // console.log(this.user);
+    // this.authService.signIn(this.user)
+    //   .then(() => {
+    //     this.router.navigateByUrl('/dashboard');
+    //   }).catch((err) => {
+    //     this.loading = false;
+    //     console.log(err);
+    //     Swal.fire('Error', err.name, 'error');
+    //   });
+
+    this.authService.federatedSignIn()
+      .then((resp)=>{
+        console.log(resp);
+      }).catch((err)=>{
         console.log(err);
-        Swal.fire('Error', err.name, 'error');
       });
 
-    //this.authService.federatedSignIn();
-    
   }
 
 }

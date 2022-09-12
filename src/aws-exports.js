@@ -1,10 +1,10 @@
 const awsmobile = {
     "aws_project_region": "us-east-1",
     "aws_cognito_region": "us-east-1",
-    "aws_user_pools_id": "us-east-1_BViNLPAZW",
-    "aws_user_pools_web_client_id": "7l58broj906ds4bmep13hf1iev",
+    "aws_user_pools_id": "us-east-1_EsvrDQlkM",
+    "aws_user_pools_web_client_id": "4gcb3jnanjj3gvbsdn1hcbpt3",
     "oauth": {
-        "domain": "digital-application-new.auth.us-east-1.amazoncognito.com",
+        "domain": "pool-application-test.auth.us-east-1.amazoncognito.com",
         "scope": [
             "phone",
             "email",
